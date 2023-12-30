@@ -6,6 +6,7 @@ import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 import { AuthDto } from './../src/auth/dto/auth.dto';
+import { EditUserDto } from './../src/user/dto/edit-user.dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -85,8 +86,26 @@ describe('AppController (e2e)', () => {
           .withHeaders({
             Authorization: `Bearer $S{userAt}`,
           })
+          .expectStatus(200);
+        // .inspect();
+      });
+    });
+
+    describe('update User', () => {
+      it('should update user', () => {
+        const editDto: EditUserDto = {
+          name: 'name-updated',
+        };
+
+        return pactum
+          .spec()
+          .patch('/users/edit')
+          .withHeaders({
+            Authorization: `Bearer $S{userAt}`,
+          })
+          .withBody(editDto)
           .expectStatus(200)
-          .inspect();
+          .expectBodyContains(editDto.name);
       });
     });
   });
