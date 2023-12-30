@@ -10,8 +10,15 @@ import { AuthDto } from './../src/auth/dto/auth.dto';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+
   const test_port = 3333;
   const test_url = `http://localhost:${test_port}`;
+
+  const authData: AuthDto = {
+    email: 'test@email.com',
+    name: 'test',
+    password: 'test',
+  };
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -43,13 +50,11 @@ describe('AppController (e2e)', () => {
 
   describe('Auth', () => {
     describe('SignUp', () => {
-      it('should signup', () => {
-        const authData: AuthDto = {
-          email: 'test@email.com',
-          name: 'test',
-          password: 'test',
-        };
+      it('should throw if no body', () => {
+        return pactum.spec().post(`/auth/sign-up`).expectStatus(400);
+      });
 
+      it('should signup', () => {
         return pactum
           .spec()
           .post(`/auth/sign-up`)
@@ -60,12 +65,30 @@ describe('AppController (e2e)', () => {
     });
 
     describe('Login', () => {
-      it.todo('should login');
+      it('should login', () => {
+        return pactum
+          .spec()
+          .post(`/auth/login`)
+          .withBody(authData)
+          .expectStatus(200)
+          .stores('userAt', 'access_token');
+      });
     });
   });
 
   describe('User', () => {
-    describe('Get current User', () => {});
+    describe('Get current User', () => {
+      it('should get current user', () => {
+        return pactum
+          .spec()
+          .get('/users/profile')
+          .withHeaders({
+            Authorization: `Bearer $S{userAt}`,
+          })
+          .expectStatus(200)
+          .inspect();
+      });
+    });
   });
 
   describe('Book', () => {
