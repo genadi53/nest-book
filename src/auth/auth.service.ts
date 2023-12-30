@@ -1,15 +1,21 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto } from './dto/auth.dto';
-import * as argon from 'argon2';
+import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import * as argon from 'argon2';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthDto } from './dto/auth.dto';
 import { LoginDto } from './dto/login.dto';
-// import { User } from '@prisma/client';
+import { CONSTANTS } from 'src/constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly config: ConfigService,
+  ) {}
 
   async signup(dto: AuthDto) {
     try {
@@ -22,7 +28,9 @@ export class AuthService {
           role: Role.User,
         },
       });
-      return user;
+
+      const access_token = await this.signToken(user.id, user.email);
+      return { access_token };
     } catch (err) {
       console.error(err);
       if (
@@ -45,10 +53,19 @@ export class AuthService {
       const isMatch = await argon.verify(user.password, dto.password);
       if (!isMatch) throw new ForbiddenException('Incorrect credentials');
 
-      return { user };
+      const access_token = await this.signToken(user.id, user.email);
+      return { access_token };
     } catch (err) {
       console.error(err);
       throw new ForbiddenException(err.message || 'Incorrect credentials');
     }
+  }
+
+  async signToken(userId: number, email: string): Promise<string> {
+    const payload = { sub: userId, email };
+    return this.jwtService.signAsync(payload, {
+      expiresIn: CONSTANTS.JWT_EXPIRATION_TIME,
+      secret: this.config.get('JWT_SECRET') || '',
+    });
   }
 }
