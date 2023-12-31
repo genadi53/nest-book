@@ -19,9 +19,7 @@ model User {
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
     is_deleted      Boolean   @default(false)
-
     books           TakenBooks[]
-    publishedBooks  Book[]
 }
 
 model Book {
@@ -29,13 +27,23 @@ model Book {
     name            String
     description     String
     author_id       Int
-    author          User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+    author          Author      @relation(fields: [author_id], references: [id], onDelete: Cascade)
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
     is_deleted      Boolean   @default(false)
     takenBooks      TakenBooks[]
     
     @@index([author_id])
+}
+
+model Author {
+    id              Int    @id @default(autoincrement())
+    name            String
+    description     String?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+    is_deleted      Boolean   @default(false)
+    writenBooks     Book[]
 }
 
 model TakenBooks {
@@ -49,6 +57,6 @@ model TakenBooks {
 
 enum Role {
   User
-  Author
+  Admin
   Librarian
 }
