@@ -22,13 +22,13 @@ export class BookService {
 
   async getAllTakenBooks(userId: number) {
     try {
-      const user = this.prisma.user.findUniqueOrThrow({
+      const { books } = await this.prisma.user.findUniqueOrThrow({
         where: { id: userId },
         select: {
           books: { include: { book: true } },
         },
       });
-      return user.books;
+      return { books };
     } catch (err) {
       console.error(err);
       return new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);

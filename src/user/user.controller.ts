@@ -19,9 +19,9 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/profile')
-  getProfile(@GetUser() user: User | undefined) {
+  getProfile(@GetUser() user: User) {
     console.log(user);
-    return user;
+    return this.userService.getProfile(user.id);
   }
 
   @Get('/profile/email')

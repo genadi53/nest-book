@@ -73,7 +73,7 @@ export class BookController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/:id/take')
+  @Post('/:id/return')
   async returnTakenBook(
     @GetUser('id') userId: number,
     @Param('id', ParseIntPipe) bookId: number,

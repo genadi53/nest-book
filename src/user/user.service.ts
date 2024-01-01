@@ -26,4 +26,13 @@ export class UserService {
       return new HttpException('I_AM_A_TEAPOT', HttpStatus.I_AM_A_TEAPOT);
     }
   }
+
+  async getProfile(userId: number) {
+    return this.prisma.user.findUniqueOrThrow({
+      where: {
+        id: userId,
+      },
+      include: { books: true },
+    });
+  }
 }
