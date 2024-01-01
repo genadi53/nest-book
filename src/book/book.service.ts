@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateBookDto } from './dto/createBook.dto';
 import { EditBookDto } from './dto/editBook.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class BookService {
@@ -47,7 +47,7 @@ export class BookService {
     });
 
     if (author && author.id) {
-      await this.prisma.book.create({
+      return this.prisma.book.create({
         data: {
           name: bookDto.name,
           description: bookDto.description || '',
@@ -59,7 +59,7 @@ export class BookService {
         },
       });
     } else {
-      await this.prisma.book.create({
+      return this.prisma.book.create({
         data: {
           name: bookDto.name,
           description: bookDto.description || '',

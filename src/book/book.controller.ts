@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -35,6 +37,7 @@ export class BookController {
     return this.bookService.getAllTakenBooks(userId);
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
   @Post('/')
   async createBook(
@@ -54,6 +57,7 @@ export class BookController {
     return this.bookService.editBook(userId, bookId, bookDto);
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthGuard)
   @Delete('/:id')
   async deleteBook(
