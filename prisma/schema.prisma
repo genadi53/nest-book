@@ -11,9 +11,9 @@ datasource db {
 }
 
 model User {
-    id              Int   @id @default(autoincrement())
+    id              Int       @id @default(autoincrement())
     name            String
-    email           String   @unique
+    email           String    @unique
     password        String
     role            Role
     createdAt       DateTime  @default(now())
@@ -23,21 +23,22 @@ model User {
 }
 
 model Book {
-    id              Int    @id @default(autoincrement())
+    id              Int         @id @default(autoincrement())
     name            String
     description     String
     author_id       Int
     author          Author      @relation(fields: [author_id], references: [id], onDelete: Cascade)
-    createdAt       DateTime  @default(now())
-    updatedAt       DateTime  @updatedAt
-    is_deleted      Boolean   @default(false)
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    copies          Int         @default(1)
+    is_deleted      Boolean     @default(false)
     takenBooks      TakenBooks[]
     
     @@index([author_id])
 }
 
 model Author {
-    id              Int    @id @default(autoincrement())
+    id              Int       @id @default(autoincrement())
     name            String
     description     String?
     createdAt       DateTime  @default(now())
@@ -49,8 +50,10 @@ model Author {
 model TakenBooks {
   user_id          Int
   book_id          Int
-  user             User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  book             Book  @relation(fields: [book_id], references: [id], onDelete: Cascade)
+  user             User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  book             Book       @relation(fields: [book_id], references: [id], onDelete: Cascade)
+  takenAt          DateTime   @default(now())
+  returnedAt       DateTime?  
 
   @@id([user_id, book_id])
 }

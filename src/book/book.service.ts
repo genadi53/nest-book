@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateBookDto } from './dto/createBook.dto';
 import { EditBookDto } from './dto/editBook.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,16 +12,27 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class BookService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getBookById(userId: number, bookId: number) {
-    const isLibrarian = await this.isUserLibrarian(userId);
+  getAllBooks() {
+    return this.prisma.book.findMany();
+  }
 
-    if (!isLibrarian) throw new UnauthorizedException('Not Librarian');
-
+  async getBookById(bookId: number) {
     return this.prisma.book.findUnique({ where: { id: bookId } });
   }
 
   async getAllTakenBooks(userId: number) {
-    console.log(userId);
+    try {
+      const user = this.prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: {
+          books: { include: { book: true } },
+        },
+      });
+      return user.books;
+    } catch (err) {
+      console.error(err);
+      return new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+    }
   }
 
   async createBook(userId: number, bookDto: CreateBookDto) {
@@ -80,6 +96,51 @@ export class BookService {
       data: { is_deleted: true },
       where: { id: bookId },
     });
+  }
+
+  async takeBook(userId: number, bookId: number) {
+    try {
+      const book = await this.prisma.book.findUnique({
+        where: { id: bookId },
+      });
+
+      if (!book) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND);
+
+      await this.prisma.takenBooks.create({
+        data: {
+          book_id: bookId,
+          user_id: userId,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return err;
+    }
+  }
+
+  async returnTakenBook(userId: number, bookId: number) {
+    try {
+      const book = await this.prisma.book.findUnique({
+        where: { id: bookId },
+      });
+
+      if (!book) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND);
+
+      await this.prisma.takenBooks.update({
+        data: {
+          returnedAt: new Date(),
+        },
+        where: {
+          user_id_book_id: {
+            book_id: bookId,
+            user_id: userId,
+          },
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return err;
+    }
   }
 
   async isUserLibrarian(userId: number) {
