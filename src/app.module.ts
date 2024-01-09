@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { BookModule } from './book/book.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
+import { AuthorModule } from './author/author.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserModule } from './user/user.module';
     BookModule,
     PrismaModule,
     UserModule,
+    AuthorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
